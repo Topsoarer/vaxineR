@@ -6,3 +6,4 @@
 ^Meta$
 ^dev$
 ^.*\.xlsx$
+^\.github$
