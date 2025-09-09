@@ -1,0 +1,96 @@
+---
+title: "Using vaxineR for Outbreak Risk Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using vaxineR for Outbreak Risk Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(vaxineR)
+library(dplyr)
+```
+
+The `vaxineR` package provides a suite of tools for analyzing kindergarten vaccination coverage data and modeling potential outbreak risks for various diseases. This vignette serves as a detailed guide to its core functionalities.
+
+## Included Data: `florida_vaccine_coverage`
+
+The package comes with a built-in dataset containing annual data from 2016-2024 for all 67 Florida counties, plus the statewide average.
+
+```{r data_glimpse}
+glimpse(florida_vaccine_coverage)
+
+# Let's look at the data for a single county
+florida_vaccine_coverage %>%
+  filter(County == "Leon")
+```
+
+## Core Concepts: Smart Defaults
+
+A key feature of `vaxineR`'s modeling functions (`plot_risk_curve`, `plot_outbreak_prob`, `summary_infection_risk`) is the use of smart defaults for Vaccine Effectiveness (`VE`).
+
+- If you **do not** specify a `VE` for a standard disease ("Measles", "Pertussis", "Chickenpox"), the package automatically applies a scientifically-accepted default value (e.g., 97% for Measles, 85% for Pertussis).
+- If you **do** specify a `VE`, your value will always be used. This allows you to model scenarios with different vaccine efficacies.
+- For `disease = "Custom"`, you are always required to provide both a `VE` and an `r0_custom` value.
+
+Let's see this in action. Here we model Pertussis without specifying `VE`, so the function uses its default of 85%. Notice the subtitle on the plot confirms this.
+
+```{r smart-default-example, fig.width=7, fig.height=5}
+plot_outbreak_prob(disease = "Pertussis")
+```
+
+Now, let's override this default to model a hypothetical, more effective Pertussis vaccine with 92% effectiveness.
+
+```{r override-default-example, fig.width=7, fig.height=5}
+plot_outbreak_prob(disease = "Pertussis", VE = 0.92)
+```
+
+## Modeling a Custom Disease
+
+You can model any disease by setting `disease = "Custom"` and providing your own `r0_custom` and `VE`. Let's simulate a mumps-like illness, with an R0 of 11 and a VE of 88%.
+
+```{r custom-summary}
+summary_infection_risk(
+  yr = 2024,
+  disease = "Custom",
+  VE = 0.88,
+  r0_custom = 11
+)
+```
+
+## Visualization Functions
+
+### `plot_coverage_history()`
+
+Track the vaccination coverage history for one or more counties.
+
+```{r plot-history, fig.width=7, fig.height=5}
+plot_coverage_history(county_name = c("Florida", "Broward", "Leon"))
+```
+
+### `plot_risk_curve()`
+
+Visualize the non-linear relationship between vaccination coverage and expected infections. This plot shows the "tipping point" where risk escalates rapidly. Here we use the default VE for Measles (97%).
+
+```{r plot-risk, fig.width=7, fig.height=5}
+plot_risk_curve(disease = "Measles", kindergarten_size = 200)
+```
+
+## Saving Plot Data
+
+To save the data from any plot, simply provide a file path to the `save_data_to` argument. This creates an Excel file with both data and metadata.
+
+```{r save-data-example}
+plot_risk_curve(
+  disease = "Chickenpox",
+  save_data_to = "chickenpox_risk_data.xlsx"
+)
+```

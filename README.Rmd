@@ -1,0 +1,105 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# vaxineR <img src="man/figures/logo.png" align="right" height="139" />
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+<!-- badges: end -->
+
+`vaxineR` is an R package for analyzing kindergarten vaccine coverage data and modeling potential infectious disease outbreak risks. It provides functions to calculate key epidemiological metrics, generate summary tables, and create insightful visualizations based on historical Florida county data.
+
+## Key Features
+
+*   Calculate Effective Reproduction Number (Re), outbreak probabilities, and expected infections.
+*   Model risk for different diseases (Measles, Pertussis, Chickenpox) and scenarios.
+*   Includes cleaned, tidy historical vaccination data for Florida counties (2016-2024).
+*   Generate publication-ready plots for risk curves, outbreak probabilities, and historical trends.
+*   Export the data underlying any plot to CSV or Excel for further analysis.
+
+## Installation
+
+You can install the development version of vaxineR from GitHub with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("YOUR-GITHUB-USERNAME/vaxineR")
+```
+
+## Example Usage
+
+```{r example-setup}
+library(vaxineR)
+library(dplyr)
+```
+
+### 1. Basic Calculations
+
+Calculate the expected number of measles infections in a school of 100 students where vaccination coverage is 88%.
+
+```{r calculation}
+calc_expected_infections(
+  vc = 0.88,
+  VE = 0.97,
+  disease = "Measles",
+  kindergarten_size = 100
+)
+```
+
+### 2. Generate a Risk Summary Table
+
+Quickly assess the situation for a given year. The table shows risk scenarios for the statewide average and counties at different coverage quantiles.
+
+```{r summary-table}
+summary_infection_risk(yr = 2024, disease = "Measles", VE = 0.97)
+```
+
+### 3. Visualize Historical Trends
+
+Plot the vaccination coverage history for a few key counties.
+
+```{r plot-history, fig.show='hold'}
+plot_coverage_history(county_name = c("Florida", "Miami-Dade", "Broward"))
+```
+
+### 4. Plot a Risk Curve and Save the Data
+
+Visualize the non-linear "tipping point" of outbreak risk. We will also save the underlying data to an Excel file, which will contain both the data and a metadata sheet describing it.
+
+```{r plot-risk-save}
+plot_risk_curve(
+  disease = "Measles",
+  VE = 0.97,
+  kindergarten_size = 200,
+  save_data_to = "measles_risk_curve_data.xlsx"
+)
+```
+
+The generated file `measles_risk_curve_data.xlsx` will now be in your working directory.
+
+
+### 5. Modeling a Custom Disease
+
+You can model any hypothetical disease by setting disease = "Custom" and providing a value for r0_custom.
+
+```{r custom-disease}}
+plot_risk_curve(
+  disease = "Custom",
+  VE = 0.90,
+  r0_custom = 7,
+  kindergarten_size = 100
+)
+```
